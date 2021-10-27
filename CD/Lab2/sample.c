@@ -1,7 +1,6 @@
 #include <stdio.h>
 int main()
 {
-	char printfarr[7];
 	FILE *fa, *fb;
 	int ca, cb;
 	fa = fopen("input.c", "r");
@@ -14,17 +13,12 @@ int main()
 	ca = getc(fa);
 	while (ca != EOF)
 	{
-		//removing all whitespaces
 		if(ca==' ')
 		{
 			putc(ca,fb);
 			while(ca==' ')
 				ca = getc(fa);
 		}
-		//check if we have a printf stmt
-		//if yes then store everything in a buffer and not simultaneously output it
-		//on ; we can output the buffer in output.c
-
 		if (ca=='/')
 		{
 			cb = getc(fa);
