@@ -1,0 +1,1 @@
+select a from T1 where a = 'c'
