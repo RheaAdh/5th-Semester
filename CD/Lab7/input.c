@@ -1,6 +1,8 @@
-#include<stdio.h>
+#include <stdio.h>
 //abc
-void main(){
+void main()
+{
     int a;
-    a=10;
+    a = 10;
+    a == = 10;
 }

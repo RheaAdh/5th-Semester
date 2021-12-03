@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <la.c>
+#include "la.c"
 FILE *fin;
 struct token tkn;
 
@@ -11,6 +11,7 @@ void declaration();
 void assign_stat();
 void data_type();
 void identifier_list();
+// left factoring
 void IDListprime();
 void assign_statPrime();
 

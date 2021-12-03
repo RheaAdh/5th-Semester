@@ -1,1 +1,1 @@
-select a from T1 where a = 'c'
+select a from T1 where a = "c"

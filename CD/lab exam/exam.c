@@ -1,306 +1,235 @@
-// Rd parser for this grammar
-
-// Query -> select paramList Fclause Wclause
-// Fclause -> from paramList
-// Wclause -> where id='character'
-
-// paramList -> id | id, paramList
-// we left factor it to these
-
-// paramList->id paramList'
-// paramList ->empty | ,paramList
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-void query();
-void parameters();
-void parametersPrime();
-void fClause();
-void wClause();
+char buffer[256];
+char ch;
+FILE *fp1;
+int i = 0;
+//char *lexemes[] = {""}
+
+void success()
+{
+    printf("The string has been accepted!\n");
+    exit(0);
+}
+
+void failure()
+{
+    printf("the string cant be accepted");
+    exit(0);
+}
+
+void Query();
+void Parameters();
+void P();
+void Fclause();
+void Wclause();
 void Exp();
-int id();
 
-/*
-Not working
-File reading, change the string below
-multiple parameters (i.e id,id) does not get matched
-
-Not efficient
-Character by character checking
-Some places need to increment curr by 2 to avoid the spaces
-*/
-
-void valid()
+int main()
 {
-    printf("----Success----\n");
-    exit(0);
-}
-void invalid(int d)
-{
-    printf("----Error----%d\n", d);
-    exit(0);
-}
 
-int curr = 0;
-char str[200] = "Select id from id where id='Character'";
-// char str[200] = calloc(sizeof(char), 200);
-
-int id()
-{
-    if (str[curr] == 'i')
+    fp1 = fopen("input.txt", "r");
+    if (fp1 == NULL)
     {
-        curr++;
-        if (str[curr] == 'd')
+        printf("Input file cannot be opened\n");
+        exit(0);
+    }
+
+    Query();
+
+    ch = fgetc(fp1);
+    if (ch == EOF)
+        success();
+    else
+    {
+        printf("main called fail\n");
+        failure();
+    }
+
+    return 0;
+}
+
+void Query()
+{
+    i = 0;
+    ch = fgetc(fp1);
+    while (isalpha(ch) || isdigit(ch))
+    {
+        buffer[i++] = ch;
+        ch = fgetc(fp1);
+    }
+    buffer[i] = '\0';
+    if (strcmp(buffer, "select") == 0)
+    {
+        i = 0;
+        ch = fgetc(fp1); //for the space
+        while (ch == ' ')
         {
-            return 1;
+            ch = fgetc(fp1); //for any extra spaces
         }
-        else
-            invalid(0);
+        //rn ch has the next lexemes first letter
+
+        Parameters();
+        Fclause();
+        Wclause();
     }
     else
-        invalid(0);
+    {
+        printf("query called fail\n");
+        failure();
+    }
 }
 
-void query()
+void Parameters()
 {
-    if (str[curr] == 'S')
+    i = 0;
+    while (isalpha(ch) || isdigit(ch))
     {
-        curr++;
-        if (str[curr] == 'e')
+        buffer[i++] = ch;
+        ch = fgetc(fp1);
+    }
+    buffer[i] = '\0';
+    ch = fgetc(fp1); //for the space
+    while (ch == ' ')
+    {
+        ch = fgetc(fp1); //for any extra spaces
+    }
+    if (i == 0)
+    {
+        //ie buffer empty so nothing will be there after ','
+        printf("parameters called fail\n");
+        failure();
+    }
+    i = 0;
+    P();
+}
+
+void P()
+{
+
+    if (ch == ',')
+    {
+        while (isalpha(ch) || isdigit(ch))
         {
-            curr++;
-            if (str[curr] == 'l')
-            {
-                curr++;
-                if (str[curr] == 'e')
-                {
-                    curr++;
-                    if (str[curr] == 'c')
-                    {
-                        curr++;
-                        if (str[curr] == 't')
-                        {
-                            curr = curr + 2;
-                            ;
-                            parameters();
-                            fClause();
-                            wClause();
-                        }
-                        else
-                            invalid(1);
-                    }
-                    else
-                        invalid(1);
-                }
-                else
-                    invalid(1);
-            }
-            else
-                invalid(1);
+            buffer[i++] = ch;
+            ch = fgetc(fp1);
         }
-        else
-            invalid(1);
-    }
-    else
-        invalid(1);
-}
-
-void parameters()
-{
-    if (id())
-    {
-        curr++;
-        curr++;
-        //parametersPrime();
-        return;
-    }
-    else
-        invalid(2);
-}
-
-void parametersPrime()
-{
-    if (str[curr] == ',')
-    {
-        curr++;
-        if (id())
+        buffer[i] = '\0';
+        while (ch == ' ')
         {
-            curr++;
-            parametersPrime();
+            ch = fgetc(fp1); //for any extra spaces
         }
+        Parameters();
     }
-    else
-        invalid(3);
 }
 
-void fClause()
+void Fclause()
 {
-    if (str[curr] == 'f')
+    i = 0;
+    while (isalpha(ch) || isdigit(ch))
     {
-        curr++;
-        if (str[curr] == 'r')
+        buffer[i++] = ch;
+        ch = fgetc(fp1);
+    }
+    buffer[i] = '\0';
+    if (strcmp(buffer, "from") == 0)
+    {
+        ch = fgetc(fp1); //for the space
+        while (ch == ' ')
         {
-            curr++;
-            if (str[curr] == 'o')
-            {
-                curr++;
-                if (str[curr] == 'm')
-                {
-                    curr = curr + 2;
-                    parameters();
-                }
-                else
-                    invalid(4);
-            }
-            else
-                invalid(4);
+            ch = fgetc(fp1); //for any extra spaces
         }
-        else
-            invalid(4);
+        Parameters();
     }
     else
-        invalid(4);
-    return;
+    {
+        printf("fclause called fail\n");
+        failure();
+    }
 }
 
-void wClause()
+void Wclause()
 {
-    if (str[curr] == 'w')
+    i = 0;
+    while (isalpha(ch) || isdigit(ch))
     {
-        curr++;
-        if (str[curr] == 'h')
+        buffer[i++] = ch;
+        ch = fgetc(fp1);
+    }
+    buffer[i] = '\0';
+    if (strcmp(buffer, "where") == 0)
+    {
+        ch = fgetc(fp1); //for the space
+        while (ch == ' ')
         {
-            curr++;
-            if (str[curr] == 'e')
-            {
-                curr++;
-                if (str[curr] == 'r')
-                {
-                    curr++;
-                    if (str[curr] == 'e')
-                    {
-                        curr = curr + 2;
-                        Exp();
-                    }
-                    else
-                        invalid(5);
-                }
-                else
-                    invalid(5);
-            }
-            else
-                invalid(5);
+            ch = fgetc(fp1); //for any extra spaces
         }
-        else
-            invalid(5);
+        Exp();
     }
     else
-        invalid(5);
-
-    return;
+    {
+        printf("wclause called fail\n");
+        failure();
+    }
 }
 
 void Exp()
 {
-    if (id())
+    i = 0;
+    while (isalpha(ch) || isdigit(ch))
     {
-        curr++;
-        if (str[curr] == '=')
+        buffer[i++] = ch;
+        ch = fgetc(fp1);
+    }
+    buffer[i] = '\0';
+    //have gotten id now
+    ch = fgetc(fp1);
+    while (ch == ' ')
+    {
+        ch = fgetc(fp1); //for any extra spaces
+    }
+    if (ch == '=')
+    {
+        ch = fgetc(fp1);
+        while (ch == ' ')
         {
-            curr++;
-            if (str[curr] == '\'')
+            ch = fgetc(fp1); //for any extra spaces
+        }
+        if (ch == '"')
+        {
+            ch = fgetc(fp1);
+            if (isalpha(ch))
             {
-                curr++;
-                if (str[curr] == 'C')
+                ch = fgetc(fp1);
+                if (ch == '"')
                 {
-                    curr++;
-                    if (str[curr] == 'h')
-                    {
-                        curr++;
-                        if (str[curr] == 'a')
-                        {
-                            curr++;
-                            if (str[curr] == 'r')
-                            {
-                                curr++;
-                                if (str[curr] == 'a')
-                                {
-                                    curr++;
-                                    if (str[curr] == 'c')
-                                    {
-                                        curr++;
-                                        if (str[curr] == 't')
-                                        {
-                                            curr++;
-                                            if (str[curr] == 'e')
-                                            {
-                                                curr++;
-                                                if (str[curr] = 'r')
-                                                {
-                                                    curr++;
-                                                    if (str[curr] == '\'')
-                                                    {
-                                                        return;
-                                                    }
-                                                    else
-                                                        invalid(6);
-                                                }
-                                                else
-                                                    invalid(6);
-                                            }
-                                            else
-                                                invalid(6);
-                                        }
-                                        else
-                                            invalid(6);
-                                    }
-                                    else
-                                        invalid(6);
-                                }
-                                else
-                                    invalid(6);
-                            }
-                            else
-                                invalid(6);
-                        }
-                        else
-                            invalid(6);
-                    }
-                    else
-                        invalid(6);
+                    //all good
                 }
                 else
-                    invalid(6);
+                {
+                    printf("innermost exp called fail\n");
+                    failure();
+                }
             }
             else
-                invalid(6);
+            {
+                printf("second else in exp called fail\n");
+                failure();
+            }
         }
         else
-            invalid(6);
+        {
+            printf("thirs else in exp called fail\n");
+            failure();
+        }
     }
     else
-        invalid(6);
-}
-
-int main()
-{
-    FILE *fp;
-    fp = fopen("file.txt", "r");
-
-    // char c = fgetc(fp);
-    // int i = 0;
-    // while(c != '\0'){
-    // 	str[i++] = c;
-    // 	c = fgetc(fp);
-    // }
-    // printf("%s\n", str);
-
-    query();
-
-    valid();
-
-    fclose(fp);
+    {
+        printf("outermost exp called fail\n");
+        failure();
+    }
 }
