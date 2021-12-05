@@ -1,1 +1,0 @@
-This is the text which has to be copied to "copyto.txt".

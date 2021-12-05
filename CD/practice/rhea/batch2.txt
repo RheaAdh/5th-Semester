@@ -1,0 +1,1 @@
+select a from T1,T2,T3 where a="casfae315325"

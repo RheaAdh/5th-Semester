@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     }
 
     in = open(argv[1], O_RDWR);
-    out = open(argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+    out = open(argv[2], O_WRONLY | O_CREAT);
 
     if (in == -1 || out == -1)
     {
@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 
     while (read(in, &c, 1) == 1)
     {
+        printf("%c\n", c);
         write(out, &c, 1);
     }
 
