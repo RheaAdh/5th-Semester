@@ -7,7 +7,8 @@
 
 int main(int argc, char *argv[])
 {
-    FILE *fptr;
+    // FILE *fptr;
+    int fp;
     int status = 0;
     int n;
     printf("enter n:\n");
@@ -19,23 +20,29 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0)
     {
-        fptr = fopen("sum.txt", "w+");
+        // fptr = fopen("sum.txt", "w+");
+        fp = open("sum.txt", O_WRONLY);
         int sum = 0;
         for (int i = 1; i <= n; i++)
         {
             sum += i;
         }
-        fwrite(&sum, sizeof(int), 1, fptr);
-        fclose(fptr);
+        // fwrite(&sum, sizeof(int), 1, fptr);
+        // fclose(fptr);
+        write(fp, &sum, sizeof(int));
+        close(fp);
     }
     else
     {
         wait(&status);
-        fptr = fopen("sum.txt", "r");
+        // fptr = fopen("sum.txt", "r");
+        fp = open("sum.txt", O_RDONLY);
         int sum = 0;
-        fread(&sum, sizeof(int), 1, fptr);
+        // fread(&sum, sizeof(int), 1, fptr);
+        read(fp, &sum, sizeof(int));
         printf("%d\n", sum);
-        fclose(fptr);
+        close(fp);
+        // fclose(fptr);
     }
 
     exit(0);

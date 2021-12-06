@@ -24,7 +24,7 @@ void Wclause();
 void Exp();
 
 void Valid(){
-    printf("****************SUCCESS**************************");
+    printf("\n****************SUCCESS**************************\n");
 }
 
 void Invalid(){

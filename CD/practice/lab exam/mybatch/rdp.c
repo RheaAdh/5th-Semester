@@ -5,6 +5,7 @@
 #include "la.h"
 
 FILE *fin;
+
 struct token tkn;
 
 void Start();
