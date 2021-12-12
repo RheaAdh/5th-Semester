@@ -1,37 +1,14 @@
-#include "sql_la.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <string.h>
+#include "sql_la.c"
 
-#define INPUT "input.sql"
-
-/*
-Design a Recursive Descent Parser for the following grammar:
-Query -> select Parameters Fclause Wclause
-Parameters -> id | id, Parameters
-Fclause -> from Parameters
-Wclause -> where Exp
-Exp -> id='Character'
-Sample input: select a from T1 where a='c'
-*/
+FILE *fp;
+struct TOKEN tok;
 int flag = 0;
 int unget = 0;
-FILE *fp;
 
-void Query();
-void Parameters();
-void ParametersPrime();
-void Fclause();
-void Wclause();
-void Exp();
-
-void Valid()
-{
-    printf("\n****************SUCCESS**************************\n");
-}
-
-void Invalid()
-{
-    if (!flag)
-        printf("**********ERROR*********************\n");
-}
 /*
 Design a Recursive Descent Parser for the following grammar:
 Query -> select Parameters Fclause Wclause
@@ -43,8 +20,28 @@ Exp -> id='Character'
 Sample input: select a from T1 where a='c'
 */
 
-struct TOKEN tok;
-void checkAndGet()
+void Query();
+void Parameters();
+void Parameters();
+void ParametersPrime();
+void Fclause();
+void Wclause();
+void Exp();
+
+void invalid()
+{
+    if (!flag)
+    {
+        printf("Invalid\n");
+        printf("row=%d , col=%d", tok.row, tok.col);
+    }
+}
+void valid()
+{
+    printf("valid\n");
+    exit(0);
+}
+void CheckAndGet()
 {
     if (!unget)
     {
@@ -52,12 +49,13 @@ void checkAndGet()
     }
     else
     {
+        // whenever there is no invalid statement we set unget to 0
         unget = 0;
     }
 }
 void Query()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp("select", tok.token_name) == 0)
     {
         Parameters();
@@ -66,26 +64,28 @@ void Query()
     }
     else
     {
-        Invalid();
+        invalid();
         flag = 1;
     }
 }
+
 void Parameters()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp("id", tok.token_type) == 0)
     {
         ParametersPrime();
     }
     else
     {
-        Invalid();
+        invalid();
         flag = 1;
     }
 }
+
 void ParametersPrime()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp(",", tok.token_name) == 0)
     {
         Parameters();
@@ -98,88 +98,91 @@ void ParametersPrime()
 
 void Fclause()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp("from", tok.token_name) == 0)
     {
         Parameters();
     }
     else
     {
-        Invalid();
+        invalid();
         flag = 1;
     }
 }
 
 void Wclause()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp("where", tok.token_name) == 0)
     {
         Exp();
     }
     else
     {
-        Invalid();
+        invalid();
         flag = 1;
     }
 }
-// Exp -> id='Character'
+
 void Exp()
 {
-    checkAndGet();
+    CheckAndGet();
     if (strcmp("id", tok.token_type) == 0)
     {
-        checkAndGet();
+        CheckAndGet();
         if (strcmp("=", tok.token_name) == 0)
         {
-            checkAndGet();
+            CheckAndGet();
             if (strcmp("\'", tok.token_name) == 0)
             {
-                checkAndGet();
+                CheckAndGet();
                 if (isalpha(tok.token_name[0]))
                 {
-                    checkAndGet();
+                    CheckAndGet();
                     if (strcmp("\'", tok.token_name) == 0)
                     {
-                        Valid();
+                        valid();
                     }
                     else
                     {
-                        Invalid();
+                        invalid();
                         flag = 1;
                     }
                 }
                 else
                 {
-                    Invalid();
+                    invalid();
                     flag = 1;
                 }
             }
             else
             {
-                Invalid();
+                invalid();
                 flag = 1;
             }
         }
         else
         {
-            Invalid();
+            invalid();
             flag = 1;
         }
     }
     else
     {
-        Invalid();
+        invalid();
         flag = 1;
     }
 }
 
-FILE *fp;
-
 int main()
 {
+    fp = fopen("input.sql", "r");
+    if (fp == NULL)
+    {
+        printf("CANT OPEN");
+        exit(0);
+    }
 
-    fp = fopen(INPUT, "r");
     Query();
     fclose(fp);
     return 0;

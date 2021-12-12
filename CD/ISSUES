@@ -1,0 +1,2 @@
+char tokenname[100]
+char tokentype[200]

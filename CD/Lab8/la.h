@@ -130,7 +130,7 @@ void fillToken(struct token *tkn, char c, int row, int col, char *type)
     tkn->token_name[0] = c;
     tkn->token_name[1] = '\0';
 }
-int searchTable(char lex[30])
+int searchInsideSymbolTable(char lex[30])
 {
     for (int i = 0; i < symInd; ++i)
     {
@@ -141,14 +141,16 @@ int searchTable(char lex[30])
     }
     return 0;
 }
-void insertTable(char lex[30], char dtype[30], int flag)
+void insertInSymbolTable(char lex[30], char dtype[30], int flag)
 {
-    int searchVal = searchTable(lex);
+    int searchVal = searchInsideSymbolTable(lex);
     if (searchVal == 1)
+    // already present
     {
         return;
     }
     strcpy(symVal[symInd].lex_name, lex);
+    // flag=0 means identifier
     if (flag == 0)
     {
         symVal[symInd].size = dtypeSize(dtype);
@@ -156,9 +158,11 @@ void insertTable(char lex[30], char dtype[30], int flag)
     }
     else
     {
+        // flag=1 means function
         symVal[symInd].size = -1;
         strcpy(symVal[symInd].dtype, "function");
     }
+    // since we have found a lexeme which is not already present inside the symbol table we need to add it to the symbol table and increment size of sybmbol table which stores the lexemes
     ++symInd;
 }
 void newLine()
@@ -171,6 +175,7 @@ struct token getNextToken(FILE *fin)
     int c;
     struct token tkn = {
         .row = -1};
+    // row ko -1 initialise kar deta hai
     int gotToken = 0;
     while (!gotToken && (c = fgetc(fin)) != EOF)
     {
@@ -310,12 +315,12 @@ struct token getNextToken(FILE *fin)
                 if (c == '(')
                 {
                     //function
-                    insertTable(tkn.token_name, dtype, 1);
+                    insertInSymbolTable(tkn.token_name, dtype, 1);
                 }
                 else
                 {
                     //identifier
-                    insertTable(tkn.token_name, dtype, 0);
+                    insertInSymbolTable(tkn.token_name, dtype, 0);
                 }
                 strcpy(tkn.token_name, "ID"); //changes till here
             }
@@ -326,36 +331,10 @@ struct token getNextToken(FILE *fin)
         else if (c == '/')
         {
             int d = fgetc(fin);
-            ++col;
-            if (d == '/')
-            {
-                while ((c = fgetc(fin)) != EOF && c != '\n')
-                    ++col;
-                if (c == '\n')
-                    newLine();
-            }
-            else if (d == '*')
-            {
-                do
-                {
-                    if (d == '\n')
-                        newLine();
-                    while ((c == fgetc(fin)) != EOF && c != '*')
-                    {
-                        ++col;
-                        if (c == '\n')
-                            newLine();
-                    }
-                    ++col;
-                } while ((d == fgetc(fin)) != EOF && d != '/' && (++col));
-                ++col;
-            }
-            else
-            {
-                fillToken(&tkn, c, row, --col, "ArithmeticOperator");
-                gotToken = 1;
-                fseek(fin, -1, SEEK_CUR);
-            }
+
+            fillToken(&tkn, c, row, col, "ArithmeticOperator");
+            gotToken = 1;
+            fseek(fin, -1, SEEK_CUR);
         }
         //string literal
         else if (c == '"')

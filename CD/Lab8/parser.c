@@ -31,8 +31,11 @@ void dPrime();
 
 void loopStat();
 void invalid();
+
 struct token tkn;
+
 FILE *file_ptr;
+
 void invalid()
 {
     printf("Error at row: %d, col: %d for token \"%s\"\n", tkn.row, tkn.col, tkn.token_name);
